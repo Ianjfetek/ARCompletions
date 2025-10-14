@@ -67,9 +67,16 @@ namespace ARCompletions.Controllers
                 .ToList();
             var completedVenuesResult = completedVenues.ToList();
 
-            var couponList = new[] {
-                new { vendorid = "test-vendor", imgurl = "https://example.com/coupon.png" }
-            };
+            // 只回傳已完成的場地 coupon
+            var couponList = requiredVenues
+                .Select((venue, idx) => new {
+                    venue,
+                    vendorid = $"vendor{(idx+1).ToString("D2")}",
+                    imgurl = idx < 5 ? "/Image/01-05.jpg" : $"/Image/{(idx+1).ToString("D2")}.jpg"
+                })
+                .Where(x => completedVenuesResult.Contains(x.venue))
+                .Select(x => new { x.vendorid, x.imgurl })
+                .ToList();
             return Ok(new
             {
                 completedVenues = completedVenuesResult,

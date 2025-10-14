@@ -11,10 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
-        policy.WithOrigins("http://localhost:5500")
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials()
     );
 });
 
@@ -52,7 +51,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // 健康檢查端點（Render 可用來探活）
-app.MapGet("/healthz", () => Results.Ok("ok"));
+// app.MapGet("/healthz", () => Results.Ok("ok"));
 
 if (app.Environment.IsDevelopment())
 {
@@ -61,6 +60,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowAll");
+
+// 允許存取 wwwroot 及根目錄下的靜態檔案（如 /Image/xx.jpg）
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
