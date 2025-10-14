@@ -57,8 +57,13 @@ using (var scope = app.Services.CreateScope())
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ARCompletions API v1");
+    // 若要根路徑顯示 Swagger UI，取消註解下行
+    // c.RoutePrefix = string.Empty;
+});
 }
 
 app.UseCors("AllowAll");
