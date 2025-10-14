@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: arcompletions-api
+    runtime: native
+    buildCommand: "dotnet restore && dotnet publish -c Release -o out"
+    startCommand: "dotnet out/ARCompletions.dll --urls http://0.0.0.0:$PORT"
+    envVars:
+      - key: DB_PATH
+        value: /var/data/app.db
+    disk:
+      name: data-disk
+      mountPath: /var/data
+      sizeGB: 1
+    autoDeploy: true

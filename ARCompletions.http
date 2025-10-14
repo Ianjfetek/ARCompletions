@@ -1,0 +1,6 @@
+@ARCompletions_HostAddress = http://localhost:5261
+
+GET {{ARCompletions_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
