@@ -42,6 +42,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+// 健康檢查端點（Render 可用來探活）
+app.MapGet("/healthz", () => Results.Ok("ok"));
 
 // 啟動自動套用 Migration（第一次會自動建 DB）
 using (var scope = app.Services.CreateScope())
