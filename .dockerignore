@@ -1,11 +1,10 @@
 # .NET
 bin/
+bin/
 obj/
 .vs/
 *.user
-# SQLite
 Data/*.db
-Data/*.db-shm
-Data/*.db-wal
-# Secrets
-appsettings.*.local.json
+Data/*.db-*
+.git
+.gitignore
