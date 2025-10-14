@@ -55,8 +55,7 @@ using (var scope = app.Services.CreateScope())
 // 健康檢查端點（Render 可用來探活）
 // app.MapGet("/healthz", () => Results.Ok("ok"));
 
-if (app.Environment.IsDevelopment())
-{
+
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -64,7 +63,7 @@ app.UseSwaggerUI(c =>
     // 若要根路徑顯示 Swagger UI，取消註解下行
     // c.RoutePrefix = string.Empty;
 });
-}
+
 
 app.UseCors("AllowAll");
 
