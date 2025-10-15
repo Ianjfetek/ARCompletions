@@ -90,7 +90,7 @@
 }
 
 /* 響應式調整 */
-@media (min-width: 400px) {
+@media (min-width: 600px) {
   .stamp-grid {
     grid-template-columns: repeat(5, 1fr);
     gap: var(--spacing-sm);
@@ -108,7 +108,7 @@
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 420px) {
   .stamp-grid {
     gap: var(--spacing-sm);
   }
@@ -121,5 +121,60 @@
     width: 40px;
     height: 40px;
     font-size: 24px;
+  }
+}
+
+/* 活動說明區塊 */
+.activity-description {
+  background-color: #fff9e6;
+  border: 2px solid #ffd666;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.description-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+  text-align: center;
+}
+
+.description-list {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.description-list li {
+  margin-bottom: var(--spacing-sm);
+}
+
+.description-list li:last-child {
+  margin-bottom: 0;
+}
+
+.description-list strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* 響應式調整 - 活動說明 */
+@media (max-width: 420px) {
+  .activity-description {
+    padding: var(--spacing-sm);
+  }
+
+  .description-title {
+    font-size: 16px;
+  }
+
+  .description-list {
+    font-size: 13px;
+    padding-left: 16px;
   }
 }

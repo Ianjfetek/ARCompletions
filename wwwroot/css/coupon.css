@@ -114,7 +114,7 @@
 }
 
 /* 響應式調整 */
-@media (min-width: 400px) {
+@media (min-width: 600px) {
   .coupon-grid {
     grid-template-columns: repeat(5, 1fr);
     gap: var(--spacing-sm);
@@ -131,7 +131,7 @@
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 420px) {
   .coupon-grid {
     gap: var(--spacing-sm);
   }
