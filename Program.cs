@@ -4,6 +4,7 @@
 
 using ARCompletions.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;   // ← 重要：用於靜態檔案對應
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +34,7 @@ else
 }
 
 // 註冊 DbContext（用你現有的 ARCompletionsContext）
-builder.Services.AddDbContext<ARCompletions.Data.ARCompletionsContext>(opt =>
+builder.Services.AddDbContext<ARCompletionsContext>(opt =>
     opt.UseSqlite($"Data Source={dbPath}"));
 
 // 其他服務
@@ -42,39 +43,45 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
 // 健康檢查端點（Render 可用來探活）
 app.MapGet("/healthz", () => Results.Ok("ok"));
 
 // 啟動自動套用 Migration（第一次會自動建 DB）
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ARCompletions.Data.ARCompletionsContext>();
+    var db = scope.ServiceProvider.GetRequiredService<ARCompletionsContext>();
     db.Database.Migrate();
 }
-
-// 健康檢查端點（Render 可用來探活）
-// app.MapGet("/healthz", () => Results.Ok("ok"));
-
 
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "ARCompletions API v1");
-    // 若要根路徑顯示 Swagger UI，取消註解下行
-    // c.RoutePrefix = string.Empty;
+    // c.RoutePrefix = string.Empty; // 若要根路徑顯示 Swagger UI 就解註
 });
-
 
 app.UseCors("AllowAll");
 
-// 允許存取 wwwroot 及 /Image 目錄下的靜態檔案
-app.UseStaticFiles(); // wwwroot 預設
-app.UseStaticFiles(new StaticFileOptions {
-    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "Image")
-    ),
-    RequestPath = "/Image"
-});
+// ======= 靜態檔案設定 =======
+// 1) 啟用 wwwroot（若有）
+app.UseStaticFiles();
+
+// 2) 對應專案根目錄的「Image」資料夾到 /Image 路徑
+var imagePath = Path.Combine(builder.Environment.ContentRootPath, "Image");
+if (Directory.Exists(imagePath))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(imagePath),
+        RequestPath = "/Image"
+    });
+}
+else
+{
+    app.Logger.LogWarning("Static image path not found: {Path}", imagePath);
+}
+// ===========================
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
