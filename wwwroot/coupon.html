@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="優惠券頁面">
+  <title>優惠券</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/coupon.css">
+</head>
+<body>
+  <!-- Loading 狀態 -->
+  <div id="loading">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- 主容器 -->
+  <div class="container">
+    <!-- 錯誤訊息 -->
+    <div id="error"></div>
+
+    <!-- 頁面標題 -->
+    <h1 class="page-title">我的優惠券</h1>
+
+    <!-- 導航按鈕 -->
+    <div class="nav-buttons">
+      <a href="index.html" class="nav-btn">集章頁面</a>
+      <a href="coupon.html" class="nav-btn active">優惠券</a>
+    </div>
+
+    <!-- 優惠券網格 -->
+    <div class="coupon-grid" id="couponGrid">
+      <!-- 動態生成 15 個優惠券項目 -->
+    </div>
+  </div>
+
+  <!-- 模態對話框 -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-title" id="modalTitle">標題</div>
+      <div class="modal-body" id="modalBody">內容</div>
+      <div class="modal-buttons" id="modalButtons">
+        <!-- 動態生成按鈕 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/coupon.js"></script>
+</body>
+</html>
