@@ -1,0 +1,94 @@
+{
+  "venues": [
+    {
+      "id": "venue01",
+      "name": "彼緹娃觀光工廠",
+      "image": "assets/images/01.jpg",
+      "description": ""
+    },
+    {
+      "id": "venue02",
+      "name": "彼緹娃觀光工廠",
+      "image": "assets/images/02.jpg",
+      "description": ""
+    },
+    {
+      "id": "venue03",
+      "name": "彼緹娃觀光工廠",
+      "image": "assets/images/03.jpg",
+      "description": ""
+    },
+    {
+      "id": "venue04",
+      "name": "彼緹娃觀光工廠",
+      "image": "assets/images/04.jpg",
+      "description": ""
+    },
+    {
+      "id": "venue05",
+      "name": "彼緹娃觀光工廠",
+      "image": "assets/images/05.jpg",
+      "description": ""
+    },
+    {
+      "id": "venue06",
+      "name": "日寶食品",
+      "image": "assets/images/06.jpg",
+      "description": ""
+    },
+    {
+      "id": "venue07",
+      "name": "佛都愛玉",
+      "image": "assets/images/07.jpg",
+      "description": ""
+    },
+    {
+      "id": "venue08",
+      "name": "御品紅豆",
+      "image": "assets/images/08.jpg",
+      "description": ""
+    },
+    {
+      "id": "venue09",
+      "name": "國王家族",
+      "image": "assets/images/09.jpg",
+      "description": ""
+    },
+    {
+      "id": "venue10",
+      "name": "觀光工廠",
+      "image": "assets/images/10.jpg",
+      "description": ""
+    },
+    {
+      "id": "venue11",
+      "name": "上雅禮品",
+      "image": "assets/images/11.jpg",
+      "description": ""
+    },
+    {
+      "id": "venue12",
+      "name": "金吉食品",
+      "image": "assets/images/12.jpg",
+      "description": ""
+    },
+    {
+      "id": "venue13",
+      "name": "宏興製香鋪",
+      "image": "assets/images/13.jpg",
+      "description": ""
+    },
+    {
+      "id": "venue14",
+      "name": "鼎心鮮肉舖",
+      "image": "assets/images/14.jpg",
+      "description": ""
+    },
+    {
+      "id": "venue15",
+      "name": "泰興肉舖",
+      "image": "assets/images/15.jpg",
+      "description": ""
+    }
+  ]
+}

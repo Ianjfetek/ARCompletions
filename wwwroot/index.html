@@ -1,12 +1,47 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARCompletions 首頁</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="集章活動頁面">
+  <title>集章活動</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/stamp.css">
 </head>
 <body>
-    <h1>歡迎來到 ARCompletions API</h1>
-    <p>這是 wwwroot/index.html，靜態檔案部署測試頁。</p>
+  <!-- Loading 狀態 -->
+  <div id="loading">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <!-- 主容器 -->
+  <div class="container">
+    <!-- 錯誤訊息 -->
+    <div id="error"></div>
+
+    <!-- 頁面標題 -->
+    <h1 class="page-title">集章活動</h1>
+
+    <!-- 導航按鈕 -->
+    <div class="nav-buttons">
+      <a href="index.html" class="nav-btn active">集章頁面</a>
+      <a href="coupon.html" class="nav-btn">優惠券</a>
+    </div>
+
+    <!-- 進度顯示 -->
+    <div class="progress-info">
+      已完成 <span class="count" id="progress">0/15</span>
+    </div>
+
+    <!-- 集章網格 -->
+    <div class="stamp-grid" id="stampGrid">
+      <!-- 動態生成 15 個集章項目 -->
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/stamp.js"></script>
 </body>
 </html>
