@@ -67,8 +67,14 @@ app.UseSwaggerUI(c =>
 
 app.UseCors("AllowAll");
 
-// 允許存取 wwwroot 及根目錄下的靜態檔案（如 /Image/xx.jpg）
-app.UseStaticFiles();
+// 允許存取 wwwroot 及 /Image 目錄下的靜態檔案
+app.UseStaticFiles(); // wwwroot 預設
+app.UseStaticFiles(new StaticFileOptions {
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "Image")
+    ),
+    RequestPath = "/Image"
+});
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
