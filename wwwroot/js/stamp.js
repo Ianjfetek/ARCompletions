@@ -132,7 +132,7 @@ function createStampItem(venueId, isCompleted) {
 function updateProgress() {
   const progressElement = document.getElementById('progress');
   const doneCount = venueData.doneCount || 0;
-  const totalRequired = venueData.totalRequired || TOTAL_VENUES;
+  const totalRequired = 5 //venueData.totalRequired || TOTAL_VENUES;
 
   progressElement.textContent = `${doneCount}/${totalRequired}`;
 }
