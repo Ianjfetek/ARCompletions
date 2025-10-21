@@ -75,27 +75,27 @@ function renderCoupons() {
   const completedCount = venueData.doneCount || 0;
 
   // 建立優惠券 Map 以便快速查找
-  // 將 vendor01 轉換為 venue01 格式
+  // 將 vendor01 轉換為 v001 格式
   const couponMap = {};
   coupons.forEach(coupon => {
-    const venueId = coupon.vendorid.replace('vendor', 'venue');
+    const venueId = coupon.vendorid.replace('vendor', 'v');
     couponMap[venueId] = coupon;
   });
 
   grid.innerHTML = '';
 
-  // venue01-05 是同一店家，只顯示一次
+  // v001-v005 是同一店家，只顯示一次
   const displayedVenues = new Set();
 
   for (let i = 1; i <= TOTAL_VENUES; i++) {
-    const venueId = `venue${String(i).padStart(2, '0')}`;
+    const venueId = `v${String(i).padStart(3, '0')}`;
 
-    // venue01-05 只顯示 venue01
+    // v001-v005 只顯示 v001
     if (i >= 1 && i <= 5) {
-      if (displayedVenues.has('venue01-05-group')) {
+      if (displayedVenues.has('v001-v005-group')) {
         continue;
       }
-      displayedVenues.add('venue01-05-group');
+      displayedVenues.add('v001-v005-group');
     }
 
     const coupon = couponMap[venueId];

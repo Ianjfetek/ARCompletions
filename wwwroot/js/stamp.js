@@ -77,7 +77,7 @@ function renderStamps() {
   grid.innerHTML = '';
 
   for (let i = 1; i <= TOTAL_VENUES; i++) {
-    const venueId = `venue${String(i).padStart(2, '0')}`;
+    const venueId = `v${String(i).padStart(3, '0')}`;
     const isCompleted = completedVenues.includes(venueId);
 
     const stampItem = createStampItem(venueId, isCompleted);
