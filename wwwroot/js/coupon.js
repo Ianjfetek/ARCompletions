@@ -72,6 +72,7 @@ function updateNavLinks(userId) {
 function renderCoupons() {
   const grid = document.getElementById('couponGrid');
   const coupons = venueData.coupon || [];
+  const completedCount = venueData.doneCount || 0;
 
   // 建立優惠券 Map 以便快速查找
   // 將 vendor01 轉換為 venue01 格式
@@ -83,14 +84,54 @@ function renderCoupons() {
 
   grid.innerHTML = '';
 
+  // venue01-05 是同一店家，只顯示一次
+  const displayedVenues = new Set();
+
   for (let i = 1; i <= TOTAL_VENUES; i++) {
     const venueId = `venue${String(i).padStart(2, '0')}`;
+
+    // venue01-05 只顯示 venue01
+    if (i >= 1 && i <= 5) {
+      if (displayedVenues.has('venue01-05-group')) {
+        continue;
+      }
+      displayedVenues.add('venue01-05-group');
+    }
+
     const coupon = couponMap[venueId];
     const isUsed = Storage.isCouponUsed(venueId);
 
-    const couponItem = createCouponItem(venueId, coupon, isUsed);
+    const couponItem = createCouponItem(venueId, coupon, isUsed, completedCount);
     grid.appendChild(couponItem);
   }
+}
+
+/**
+ * 格式化簡介，將地址轉換為 Google Maps 連結
+ * @param {string} description - 店家簡介
+ * @param {string} address - 店家地址
+ * @returns {string} 格式化後的 HTML
+ */
+function formatDescriptionWithMapLink(description, address) {
+  if (!description) return '';
+
+  // 使用正則表達式匹配地址行（📍 開頭）
+  const addressPattern = /📍\s*(.+?)(?=\n|$)/;
+  const match = description.match(addressPattern);
+
+  if (match && address) {
+    const fullAddressLine = match[0]; // 完整的地址行（包含 📍）
+    const addressText = match[1].trim(); // 地址文字
+
+    // 建立 Google Maps 連結
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    const addressLink = `📍 <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" class="address-link">${addressText}</a>`;
+
+    // 替換原始地址行為連結
+    return description.replace(fullAddressLine, addressLink);
+  }
+
+  return description;
 }
 
 /**
@@ -98,33 +139,39 @@ function renderCoupons() {
  * @param {string} venueId - 場館 ID
  * @param {Object|null} coupon - 優惠券資料
  * @param {boolean} isUsed - 是否已使用
+ * @param {number} completedCount - 已完成的集章數量
  * @returns {HTMLElement} 優惠券項目元素
  */
-function createCouponItem(venueId, coupon, isUsed) {
+function createCouponItem(venueId, coupon, isUsed, completedCount) {
   const item = document.createElement('div');
+  const store = storeData[venueId];
+
+  // 判斷是否已集滿5個章
+  const hasEnoughStamps = completedCount >= 5;
 
   // 判斷狀態
   let status = 'unavailable';
-  if (coupon && !isUsed) {
+  if (hasEnoughStamps && !isUsed) {
     status = 'available';
-  } else if (coupon && isUsed) {
+  } else if (isUsed) {
     status = 'used';
   }
 
   item.className = `coupon-item ${status}`;
 
-  const store = storeData[venueId];
+  // 左側：場館圖片
+  const imageContainer = document.createElement('div');
+  imageContainer.className = 'coupon-image-container';
 
-  // 場館圖片
   if (store && store.image) {
     const img = document.createElement('img');
-    img.className = 'venue-image';
+    img.className = 'coupon-image';
     img.src = store.image;
     img.alt = store.name;
     img.onerror = function() {
       this.style.display = 'none';
     };
-    item.appendChild(img);
+    imageContainer.appendChild(img);
   }
 
   // 已使用標記（覆蓋在圖片上）
@@ -132,17 +179,60 @@ function createCouponItem(venueId, coupon, isUsed) {
     const usedMark = document.createElement('div');
     usedMark.className = 'used-mark';
     usedMark.textContent = '已使用';
-    item.appendChild(usedMark);
+    imageContainer.appendChild(usedMark);
   }
+
+  item.appendChild(imageContainer);
+
+  // 右側：店家資訊
+  const infoContainer = document.createElement('div');
+  infoContainer.className = 'coupon-info-container';
 
   // 店家名稱
   const name = document.createElement('div');
-  name.className = 'venue-name';
+  name.className = 'coupon-name';
   name.textContent = store ? store.name : venueId;
-  item.appendChild(name);
+  infoContainer.appendChild(name);
 
-  // 綁定點擊事件
-  item.addEventListener('click', () => handleCouponClick(venueId, coupon, isUsed));
+  // 店家簡介（處理地址連結）
+  const description = document.createElement('div');
+  description.className = 'coupon-description';
+
+  if (store && store.description) {
+    // 將簡介轉換為 HTML，地址部分轉為 Google Maps 連結
+    const descriptionHTML = formatDescriptionWithMapLink(store.description, store.address);
+    description.innerHTML = descriptionHTML;
+  }
+
+  infoContainer.appendChild(description);
+
+  // 按鈕容器（右下角）
+  const buttonContainer = document.createElement('div');
+  buttonContainer.className = 'coupon-button-container';
+
+  const button = document.createElement('button');
+  button.className = 'coupon-action-button';
+
+  if (!hasEnoughStamps) {
+    button.textContent = '集章未完成';
+    button.classList.add('disabled');
+  } else if (isUsed) {
+    button.textContent = '已使用';
+    button.classList.add('disabled');
+  } else {
+    button.textContent = '使用優惠券';
+    button.classList.add('active');
+  }
+
+  button.addEventListener('click', (e) => {
+    e.stopPropagation();
+    handleCouponClick(venueId, coupon, isUsed, hasEnoughStamps);
+  });
+
+  buttonContainer.appendChild(button);
+  infoContainer.appendChild(buttonContainer);
+
+  item.appendChild(infoContainer);
 
   return item;
 }
@@ -152,17 +242,18 @@ function createCouponItem(venueId, coupon, isUsed) {
  * @param {string} venueId - 場館 ID
  * @param {Object|null} coupon - 優惠券資料
  * @param {boolean} isUsed - 是否已使用
+ * @param {boolean} hasEnoughStamps - 是否集滿5個章
  */
-function handleCouponClick(venueId, coupon, isUsed) {
+function handleCouponClick(venueId, coupon, isUsed, hasEnoughStamps) {
   // 取得店家名稱
   const store = storeData[venueId];
   const storeName = store ? store.name : venueId;
 
-  if (!coupon) {
-    // 沒有優惠券 - 顯示未完成任務提示
+  if (!hasEnoughStamps) {
+    // 未集滿5個章 - 顯示提示
     showModal(
-      '尚未完成任務',
-      '您還沒有完成此場館的任務，無法獲得優惠券。',
+      '集章未完成',
+      '您需要完成5個集章任務，才能使用優惠券。',
       [
         { text: '確定', className: 'primary', onClick: closeModal }
       ]

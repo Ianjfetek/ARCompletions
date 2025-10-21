@@ -5,7 +5,7 @@
 // 全局變數
 let venueData = null;
 let storeData = null;
-const TOTAL_VENUES = 15;
+const TOTAL_VENUES = 5; // 改成只有五個
 
 /**
  * 初始化頁面
