@@ -21,7 +21,7 @@ namespace ARCompletions.Controllers
 
         // POST /venues/complete
         [HttpPost("complete")]
-    public IActionResult Complete([FromBody] CompleteRequestDto req)
+        public IActionResult Complete([FromBody] CompleteRequestDto req)
         {
             if (req == null || string.IsNullOrEmpty(req.venuesid) || string.IsNullOrEmpty(req.userid))
                 return BadRequest("Invalid request");
@@ -58,8 +58,8 @@ namespace ARCompletions.Controllers
             if (string.IsNullOrEmpty(userId))
                 return BadRequest("Invalid userId");
 
-            // 固定 requiredVenues 清單
-            var requiredVenues = new[] { "venue01", "venue02", "venue03", "venue04", "venue05", "venue06", "venue07", "venue08", "venue09", "venue10", "venue11", "venue12", "venue13", "venue14", "venue15" };
+            // 固定 requiredVenues 清單（改為 v001..v015）
+            var requiredVenues = new[] { "v001", "v002", "v003", "v004", "v005", "v006", "v007", "v008", "v009", "v010", "v011", "v012", "v013", "v014", "v015" };
             var completedVenues = _context.Completions
                 .Where(c => c.UserId == userId && c.Complate)
                 .Select(c => c.VenuesId)
