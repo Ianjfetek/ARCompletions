@@ -5,7 +5,7 @@
 // 全局變數
 let venueData = null;
 let storeData = null;
-const TOTAL_VENUES = 15;
+const TOTAL_VENUES = 5; // 改成只有五個
 
 /**
  * 初始化頁面
@@ -77,7 +77,7 @@ function renderStamps() {
   grid.innerHTML = '';
 
   for (let i = 1; i <= TOTAL_VENUES; i++) {
-    const venueId = `venue${String(i).padStart(2, '0')}`;
+    const venueId = `v${String(i).padStart(3, '0')}`;
     const isCompleted = completedVenues.includes(venueId);
 
     const stampItem = createStampItem(venueId, isCompleted);
