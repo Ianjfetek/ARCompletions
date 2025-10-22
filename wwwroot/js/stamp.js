@@ -4,21 +4,21 @@
 
 // 全局變數
 let venueData = null;
-let storeData = null;
-const TOTAL_VENUES = 5; // 改成只有五個
+let stampData = null;
+let userId = null;
 
 /**
  * 初始化頁面
  */
 async function init() {
   // 取得 userId（如果沒有則使用預設值）
-  const userId = Utils.getUrlParam('userId') || 'guest';
+  userId = Utils.getUrlParam('userId') || 'guest';
 
   // 顯示 Loading
   Utils.showLoading();
 
-  // 載入店家資料
-  storeData = await Utils.loadStoreData();
+  // 載入集章資料
+  stampData = await Utils.loadStampData();
 
   // 嘗試載入 API 資料
   let result = { success: false };
@@ -35,9 +35,9 @@ async function init() {
     venueData = {
       completedVenues: [],
       coupon: [],
-      requiredVenues: [],
+      requiredVenues: Object.keys(stampData),
       doneCount: 0,
-      totalRequired: TOTAL_VENUES
+      totalRequired: Object.keys(stampData).length
     };
   } else {
     venueData = result.data;
@@ -76,13 +76,12 @@ function renderStamps() {
 
   grid.innerHTML = '';
 
-  for (let i = 1; i <= TOTAL_VENUES; i++) {
-    const venueId = `v${String(i).padStart(3, '0')}`;
+  // 動態渲染所有場館
+  Object.keys(stampData).forEach(venueId => {
     const isCompleted = completedVenues.includes(venueId);
-
     const stampItem = createStampItem(venueId, isCompleted);
     grid.appendChild(stampItem);
-  }
+  });
 }
 
 /**
@@ -95,14 +94,14 @@ function createStampItem(venueId, isCompleted) {
   const item = document.createElement('div');
   item.className = `stamp-item${isCompleted ? ' completed' : ''}`;
 
-  const store = storeData[venueId];
+  const venue = stampData[venueId];
 
   // 場館圖片
-  if (store && store.image) {
+  if (venue && venue.image) {
     const img = document.createElement('img');
     img.className = 'venue-image';
-    img.src = store.image;
-    img.alt = store.name;
+    img.src = venue.image;
+    img.alt = venue.name;
     img.onerror = function() {
       this.style.display = 'none';
     };
@@ -115,15 +114,39 @@ function createStampItem(venueId, isCompleted) {
     checkMark.className = 'check-mark';
     checkMark.textContent = '✓';
     item.appendChild(checkMark);
+  } else {
+    // 未完成的章節：可點擊導向 URL
+    item.classList.add('clickable');
+    item.addEventListener('click', () => handleStampClick(venueId, venue));
   }
 
   // 店家名稱
   const name = document.createElement('div');
   name.className = 'venue-name';
-  name.textContent = store ? store.name : venueId;
+  name.textContent = venue ? venue.name : venueId;
   item.appendChild(name);
 
   return item;
+}
+
+/**
+ * 處理集章項目點擊事件
+ * @param {string} venueId - 場館 ID
+ * @param {Object} venue - 場館資料
+ */
+function handleStampClick(venueId, venue) {
+  if (!venue || !venue.url) {
+    console.warn(`場館 ${venueId} 沒有設定 URL`);
+    return;
+  }
+
+  // 建立帶參數的 URL
+  const url = new URL(venue.url);
+  url.searchParams.set('userId', userId);
+  url.searchParams.set('venuesid', venueId);
+
+  // 另開新視窗
+  window.open(url.toString(), '_blank');
 }
 
 /**
@@ -131,10 +154,10 @@ function createStampItem(venueId, isCompleted) {
  */
 function updateProgress() {
   const progressElement = document.getElementById('progress');
-  const doneCount = venueData.doneCount || 0;
-  const totalRequired = 5 //venueData.totalRequired || TOTAL_VENUES;
+  const doneCount = venueData.doneCount || venueData.completedVenues.length || 0;
+  const totalRequired = venueData.totalRequired || Object.keys(stampData).length;
 
-  progressElement.textContent = `${doneCount}/${totalRequired}`;
+  progressElement.textContent = `${doneCount}/${5}`;
 }
 
 // 頁面載入時初始化

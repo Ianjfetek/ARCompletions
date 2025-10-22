@@ -1,0 +1,34 @@
+{
+  "venues": [
+    {
+      "id": "v001",
+      "name": "彼緹娃_檸檬巧克力蛋糕",
+      "image": "assets/images/stamp/彼緹娃_檸檬巧克力蛋糕.png",
+      "url": "https://goldenslash1.8thwall.app/food-travel-lemonchocolatecake/?openExternalBrowser=1"
+    },
+    {
+      "id": "v002",
+      "name": "彼緹娃_波士頓派",
+      "image": "assets/images/stamp/彼緹娃_波士頓派.png",
+      "url": "https://goldenslash1.8thwall.app/food-travel-bostoncreampie?openExternalBrowser=1"
+    },
+    {
+      "id": "v003",
+      "name": "彼緹娃_重乳酪蛋糕",
+      "image": "assets/images/stamp/彼緹娃_重乳酪蛋糕.png",
+      "url": "https://goldenslash1.8thwall.app/food-travel-taroswissroll?openExternalBrowser=1"
+    },
+    {
+      "id": "v004",
+      "name": "彼緹娃_密芋頭蛋糕捲",
+      "image": "assets/images/stamp/彼緹娃_密芋頭蛋糕捲.png",
+      "url": "https://goldenslash1.8thwall.app/food-travel-newyorkcheesecake?openExternalBrowser=1"
+    },
+    {
+      "id": "v005",
+      "name": "彼緹娃_銅鑼燒",
+      "image": "assets/images/stamp/彼緹娃_銅鑼燒.png",
+      "url": "https://goldenslash1.8thwall.app/food-travel-dorayaki?openExternalBrowser=1"
+    }
+  ]
+}

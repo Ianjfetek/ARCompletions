@@ -57,27 +57,35 @@ const Utils = {
   },
 
   /**
-   * 載入店家資料
-   * @returns {Promise<Object>} 店家資料 Map
+   * 載入集章資料
+   * @returns {Promise<Object>} 集章資料 Map
    */
-  async loadStoreData() {
+  async loadStampData() {
     try {
-      const response = await fetch('assets/doc/store.json');
+      const response = await fetch('assets/doc/stamp.json');
       if (!response.ok) {
-        throw new Error('Failed to load store data');
+        throw new Error('Failed to load stamp data');
       }
       const data = await response.json();
 
       // 轉換為 Map 以便快速查找
-      const storeMap = {};
+      const stampMap = {};
       data.venues.forEach(venue => {
-        storeMap[venue.id] = venue;
+        stampMap[venue.id] = venue;
       });
 
-      return storeMap;
+      return stampMap;
     } catch (error) {
-      console.error('Load store data error:', error);
+      console.error('Load stamp data error:', error);
       return {};
     }
+  },
+
+  /**
+   * 載入店家資料（保留相容性）
+   * @returns {Promise<Object>} 店家資料 Map
+   */
+  async loadStoreData() {
+    return this.loadStampData();
   }
 };

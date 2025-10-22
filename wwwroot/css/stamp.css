@@ -26,9 +26,26 @@
   transition: all 0.3s;
 }
 
+/* 可點擊的集章項目（未完成） */
+.stamp-item.clickable {
+  cursor: pointer;
+}
+
+.stamp-item.clickable:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stamp-item.clickable:active {
+  transform: scale(0.98);
+}
+
+/* 已完成的集章項目（禁用點擊） */
 .stamp-item.completed {
   border-color: var(--success-color);
   background-color: #f6ffed;
+  cursor: default;
+  pointer-events: none;
 }
 
 /* 場館圖片 */
