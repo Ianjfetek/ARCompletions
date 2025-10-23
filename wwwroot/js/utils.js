@@ -57,7 +57,7 @@ const Utils = {
   },
 
   /**
-   * 載入集章資料
+   * 載入集章資料（用於集章頁面）
    * @returns {Promise<Object>} 集章資料 Map
    */
   async loadStampData() {
@@ -82,10 +82,27 @@ const Utils = {
   },
 
   /**
-   * 載入店家資料（保留相容性）
+   * 載入店家資料（用於優惠券頁面）
    * @returns {Promise<Object>} 店家資料 Map
    */
   async loadStoreData() {
-    return this.loadStampData();
+    try {
+      const response = await fetch('assets/doc/store.json');
+      if (!response.ok) {
+        throw new Error('Failed to load store data');
+      }
+      const data = await response.json();
+
+      // 轉換為 Map 以便快速查找
+      const storeMap = {};
+      data.venues.forEach(venue => {
+        storeMap[venue.id] = venue;
+      });
+
+      return storeMap;
+    } catch (error) {
+      console.error('Load store data error:', error);
+      return {};
+    }
   }
 };
