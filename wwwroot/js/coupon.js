@@ -78,7 +78,7 @@ function renderCoupons() {
   // 將 vendor01 轉換為 v001 格式
   const couponMap = {};
   coupons.forEach(coupon => {
-    const venueId = coupon.vendorid.replace('vendor', 'v');
+    const venueId = coupon.vendorid.replace('vendor', 'v0');
     couponMap[venueId] = coupon;
   });
 
