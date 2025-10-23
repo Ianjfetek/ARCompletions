@@ -2,6 +2,35 @@
    集章頁面樣式
    ======================================== */
 
+/* 活動引導說明 */
+.activity-guide {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.guide-text {
+  color: white;
+  font-size: 15px;
+  font-weight: 500;
+  margin: 0;
+  padding: 6px 0;
+  line-height: 1.6;
+}
+
+.guide-text:first-child {
+  font-size: 17px;
+  font-weight: 600;
+  padding-top: 0;
+}
+
+.guide-text:last-child {
+  padding-bottom: 0;
+}
+
 /* 集章網格容器 */
 .stamp-grid {
   display: grid;
@@ -138,6 +167,19 @@
     width: 40px;
     height: 40px;
     font-size: 24px;
+  }
+
+  .activity-guide {
+    padding: var(--spacing-sm);
+  }
+
+  .guide-text {
+    font-size: 14px;
+    padding: 5px 0;
+  }
+
+  .guide-text:first-child {
+    font-size: 16px;
   }
 }
 
