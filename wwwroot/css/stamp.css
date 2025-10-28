@@ -126,17 +126,10 @@
   text-align: center;
   font-weight: 500;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 1px;
-}
-
-/* 店家名稱每一行 */
-.venue-name-line {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.25;
 }
 
 .stamp-item.completed .venue-name {
@@ -151,7 +144,7 @@
   }
 
   .venue-name {
-    font-size: 14px;
+    font-size: 20px;
     padding: 3px 1px;
   }
 
@@ -168,7 +161,7 @@
   }
 
   .venue-name {
-    font-size: 14px;
+    font-size: 20px;
   }
 
   .check-mark {
