@@ -120,10 +120,31 @@ function createStampItem(venueId, isCompleted) {
     item.addEventListener('click', () => handleStampClick(venueId, venue));
   }
 
-  // 店家名稱
+  // 店家名稱（按 _ 分割成兩行）
   const name = document.createElement('div');
   name.className = 'venue-name';
-  name.textContent = venue ? venue.name : venueId;
+
+  if (venue) {
+    const parts = venue.name.split('_');
+    if (parts.length > 1) {
+      // 第一行：品牌名稱
+      const line1 = document.createElement('div');
+      line1.className = 'venue-name-line';
+      line1.textContent = parts[0];
+      name.appendChild(line1);
+
+      // 第二行：商品名稱
+      const line2 = document.createElement('div');
+      line2.className = 'venue-name-line';
+      line2.textContent = parts.slice(1).join('_');
+      name.appendChild(line2);
+    } else {
+      name.textContent = venue.name;
+    }
+  } else {
+    name.textContent = venueId;
+  }
+
   item.appendChild(name);
 
   return item;

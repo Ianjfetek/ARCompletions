@@ -34,7 +34,7 @@
 /* 集章網格容器 */
 .stamp-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
 }
@@ -129,6 +129,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.25;
 }
 
 .stamp-item.completed .venue-name {
@@ -143,7 +144,7 @@
   }
 
   .venue-name {
-    font-size: 10px;
+    font-size: 20px;
     padding: 3px 1px;
   }
 
@@ -160,7 +161,7 @@
   }
 
   .venue-name {
-    font-size: 10px;
+    font-size: 20px;
   }
 
   .check-mark {
