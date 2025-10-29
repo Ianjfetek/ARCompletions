@@ -69,6 +69,22 @@
   transform: scale(0.98);
 }
 
+/* 優惠券連結項目 */
+.stamp-item.coupon-link {
+  cursor: pointer;
+  border-color: #ffa940;
+  background: linear-gradient(135deg, #fff7e6 0%, #ffe7ba 100%);
+}
+
+/* .stamp-item.coupon-link:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 169, 64, 0.3);
+}
+
+.stamp-item.coupon-link:active {
+  transform: scale(0.98);
+} */
+
 /* 已完成的集章項目（禁用點擊） */
 .stamp-item.completed {
   border-color: var(--success-color);
@@ -91,6 +107,12 @@
 .stamp-item:not(.completed) .venue-image {
   opacity: 0.3;
   filter: grayscale(80%);
+}
+
+/* 優惠券連結的圖片 */
+.stamp-item.coupon-link .venue-image {
+  opacity: 1;
+  filter: grayscale(10%);
 }
 
 /* 完成標記 */
@@ -134,6 +156,24 @@
 
 .stamp-item.completed .venue-name {
   background: linear-gradient(to top, rgba(82, 196, 26, 0.9), transparent);
+}
+
+/* 優惠券標籤 */
+.coupon-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 4px;
+  background: linear-gradient(to top, rgba(255, 169, 64, 0.95), transparent);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  z-index: 2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 響應式調整 */

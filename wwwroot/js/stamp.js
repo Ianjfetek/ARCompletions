@@ -73,6 +73,8 @@ function updateNavLinks(userId) {
 function renderStamps() {
   const grid = document.getElementById('stampGrid');
   const completedVenues = venueData.completedVenues || [];
+  const totalVenues = Object.keys(stampData).length;
+  const isAllCompleted = completedVenues.length === totalVenues;
 
   grid.innerHTML = '';
 
@@ -82,6 +84,12 @@ function renderStamps() {
     const stampItem = createStampItem(venueId, isCompleted);
     grid.appendChild(stampItem);
   });
+
+  // 如果所有集章都完成，添加優惠券連結
+  if (isAllCompleted) {
+    const couponItem = createCouponLink();
+    grid.appendChild(couponItem);
+  }
 }
 
 /**
@@ -146,6 +154,47 @@ function createStampItem(venueId, isCompleted) {
   }
 
   item.appendChild(name);
+
+  return item;
+}
+
+/**
+ * 建立優惠券連結項目（當所有集章完成時顯示）
+ * @returns {HTMLElement} 優惠券連結項目元素
+ */
+function createCouponLink() {
+  const item = document.createElement('div');
+  item.className = 'stamp-item coupon-link';
+
+  // 使用第一張圖片作為背景（若有的話）
+  const firstVenueId = Object.keys(stampData)[0];
+  const firstVenue = stampData[firstVenueId];
+
+  if (firstVenue && firstVenue.image) {
+    const img = document.createElement('img');
+    img.className = 'venue-image';
+    img.src = 'assets/images/01.jpg';
+    img.alt = '優惠券';
+    img.onerror = function() {
+      this.style.display = 'none';
+    };
+    item.appendChild(img);
+  }
+
+  // 優惠券標籤
+  const label = document.createElement('div');
+  label.className = 'venue-name';
+  label.textContent = '優惠券';
+  item.appendChild(label);
+
+  // 點擊事件：導向優惠券頁面，帶上 userId
+  item.addEventListener('click', () => {
+    if (userId && userId !== 'guest') {
+      window.location.href = `coupon.html?userId=${userId}`;
+    } else {
+      window.location.href = 'coupon.html';
+    }
+  });
 
   return item;
 }
