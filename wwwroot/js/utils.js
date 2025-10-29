@@ -62,7 +62,8 @@ const Utils = {
    */
   async loadStampData() {
     try {
-      const response = await fetch('assets/doc/stamp.json');
+      const timestamp = new Date().getTime();
+      const response = await fetch(`assets/doc/stamp.json?t=${timestamp}`);
       if (!response.ok) {
         throw new Error('Failed to load stamp data');
       }
@@ -87,7 +88,8 @@ const Utils = {
    */
   async loadStoreData() {
     try {
-      const response = await fetch('assets/doc/store.json');
+      const timestamp = new Date().getTime();
+      const response = await fetch(`assets/doc/store.json?t=${timestamp}`);
       if (!response.ok) {
         throw new Error('Failed to load store data');
       }
