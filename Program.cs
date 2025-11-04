@@ -11,6 +11,13 @@ using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 綁定 Render 指派的 PORT（保險）
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrWhiteSpace(port))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
+
 // ------------------------
 // CORS：允許 swagger 與本機前端
 // ------------------------
@@ -24,7 +31,6 @@ builder.Services.AddCors(options =>
 
 // ------------------------
 // 資料庫設定：優先 Render Postgres（DATABASE_URL），否則回退 SQLite（DB_PATH）
-// 並分流到不同的 MigrationsAssembly，避免把 SQLite 的遷移套到 PostgreSQL
 // ------------------------
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 var isPostgres = !string.IsNullOrWhiteSpace(databaseUrl);
@@ -38,19 +44,15 @@ if (isPostgres)
     var user = WebUtility.UrlDecode(userInfoParts[0]);
     var pass = userInfoParts.Length > 1 ? WebUtility.UrlDecode(userInfoParts[1]) : "";
     var host = uri.Host;
-    var port = uri.Port == -1 ? 5432 : uri.Port;
+    var portNum = uri.Port == -1 ? 5432 : uri.Port;
     var dbName = uri.AbsolutePath.Trim('/');
 
     // 手動組裝連線字串（不使用 NpgsqlConnectionStringBuilder）
     var pgConn =
-        $"Host={host};Port={port};Database={dbName};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
+        $"Host={host};Port={portNum};Database={dbName};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
 
     builder.Services.AddDbContext<ARCompletionsContext>(opt =>
-        opt.UseNpgsql(pgConn, b =>
-        {
-            // ⚠️ 請確保此組件包含 PostgreSQL 專用遷移與 ModelSnapshot
-            b.MigrationsAssembly("ARCompletions.Migrations.Postgres");
-        }));
+        opt.UseNpgsql(pgConn)); // ← 已移除 .MigrationsAssembly(...)
 }
 else
 {
@@ -70,11 +72,7 @@ else
     }
 
     builder.Services.AddDbContext<ARCompletionsContext>(opt =>
-        opt.UseSqlite($"Data Source={dbPath}", b =>
-        {
-            // ⚠️ 請確保此組件包含 SQLite 專用遷移與 ModelSnapshot
-            b.MigrationsAssembly("ARCompletions.Migrations.Sqlite");
-        }));
+        opt.UseSqlite($"Data Source={dbPath}")); // ← 已移除 .MigrationsAssembly(...)
 }
 
 // 其他服務
@@ -90,11 +88,10 @@ var app = builder.Build();
 app.MapGet("/healthz", () => Results.Ok("ok"));
 
 // ------------------------
-// 啟動時自動處理「只改結構、不刷新資料」
-// - 只呼叫 Migrate()；不使用 EnsureCreated()
-// - 用 RUN_MIGRATIONS 控制是否自動執行（預設 true）
+// 啟動時是否自動遷移（預設關閉，先讓服務穩定啟動）
+// 需要升版時再把 RUN_MIGRATIONS 設為 true
 // ------------------------
-var runMigrations = (Environment.GetEnvironmentVariable("RUN_MIGRATIONS") ?? "true")
+var runMigrations = (Environment.GetEnvironmentVariable("RUN_MIGRATIONS") ?? "false")
                     .Equals("true", StringComparison.OrdinalIgnoreCase);
 
 app.Logger.LogInformation("DB Provider: {Provider}", isPostgres ? "PostgreSQL" : "SQLite");
@@ -107,15 +104,18 @@ if (runMigrations)
     try
     {
         app.Logger.LogInformation("Applying EF Core migrations...");
-        db.Database.Migrate(); // ✅ 只套用遷移（結構變更）；不動既有資料
+        db.Database.Migrate(); // 只套用遷移（結構變更）；不動既有資料
         app.Logger.LogInformation("Migrations applied successfully.");
     }
     catch (Exception ex)
     {
-        // ❌ 不要 fallback 到 EnsureCreated()，避免與遷移管線分歧或造成「看似清空」的錯覺
         app.Logger.LogError(ex, "Database.Migrate() failed. Not falling back to EnsureCreated().");
         throw;
     }
+}
+else
+{
+    app.Logger.LogInformation("Skipping EF migrations on startup (RUN_MIGRATIONS=false)");
 }
 
 // ------------------------
