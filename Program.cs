@@ -4,14 +4,16 @@
 
 using System;
 using System.IO;
+using System.Net;
 using ARCompletions.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
-using Npgsql; // ← 新增：PostgreSQL 連線字串建構
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ------------------------
 // CORS：允許 swagger 與本機前端
+// ------------------------
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -20,27 +22,35 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod());
 });
 
-// === 資料庫設定：優先 Render Postgres（DATABASE_URL），否則回退 SQLite（DB_PATH） ===
+// ------------------------
+// 資料庫設定：優先 Render Postgres（DATABASE_URL），否則回退 SQLite（DB_PATH）
+// 並分流到不同的 MigrationsAssembly，避免把 SQLite 的遷移套到 PostgreSQL
+// ------------------------
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-if (!string.IsNullOrWhiteSpace(databaseUrl))
-{
-    // ---- PostgreSQL（Render Postgres）----
-    var uri = new Uri(databaseUrl);
-    var userInfo = uri.UserInfo.Split(':', 2);
+var isPostgres = !string.IsNullOrWhiteSpace(databaseUrl);
 
-    var npgsql = new NpgsqlConnectionStringBuilder
-    {
-        Host = uri.Host,
-        Port = uri.Port == -1 ? 5432 : uri.Port,
-        Database = uri.AbsolutePath.Trim('/'),
-        Username = userInfo[0],
-        Password = userInfo.Length > 1 ? userInfo[1] : "",
-        SslMode = SslMode.Require,
-        TrustServerCertificate = true // Render 內網可先開；正式可改嚴格驗證
-    }.ToString();
+if (isPostgres)
+{
+    // ---- PostgreSQL（Render）----
+    // 例：postgres://user:pass@host:5432/dbname
+    var uri = new Uri(databaseUrl!);
+    var userInfoParts = uri.UserInfo.Split(':', 2);
+    var user = WebUtility.UrlDecode(userInfoParts[0]);
+    var pass = userInfoParts.Length > 1 ? WebUtility.UrlDecode(userInfoParts[1]) : "";
+    var host = uri.Host;
+    var port = uri.Port == -1 ? 5432 : uri.Port;
+    var dbName = uri.AbsolutePath.Trim('/');
+
+    // 手動組裝連線字串（不使用 NpgsqlConnectionStringBuilder）
+    var pgConn =
+        $"Host={host};Port={port};Database={dbName};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
 
     builder.Services.AddDbContext<ARCompletionsContext>(opt =>
-        opt.UseNpgsql(npgsql));
+        opt.UseNpgsql(pgConn, b =>
+        {
+            // ⚠️ 請確保此組件包含 PostgreSQL 專用遷移與 ModelSnapshot
+            b.MigrationsAssembly("ARCompletions.Migrations.Postgres");
+        }));
 }
 else
 {
@@ -50,7 +60,7 @@ else
     if (!string.IsNullOrWhiteSpace(envDbPath))
     {
         Directory.CreateDirectory(Path.GetDirectoryName(envDbPath)!);
-        dbPath = envDbPath;
+        dbPath = envDbPath!;
     }
     else
     {
@@ -60,7 +70,11 @@ else
     }
 
     builder.Services.AddDbContext<ARCompletionsContext>(opt =>
-        opt.UseSqlite($"Data Source={dbPath}"));
+        opt.UseSqlite($"Data Source={dbPath}", b =>
+        {
+            // ⚠️ 請確保此組件包含 SQLite 專用遷移與 ModelSnapshot
+            b.MigrationsAssembly("ARCompletions.Migrations.Sqlite");
+        }));
 }
 
 // 其他服務
@@ -70,37 +84,56 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// ------------------------
 // 健康檢查端點（Render 可用來探活）
+// ------------------------
 app.MapGet("/healthz", () => Results.Ok("ok"));
 
-// 啟動時自動處理資料庫（先嘗試遷移，失敗再 EnsureCreated 一次）
-using (var scope = app.Services.CreateScope())
+// ------------------------
+// 啟動時自動處理「只改結構、不刷新資料」
+// - 只呼叫 Migrate()；不使用 EnsureCreated()
+// - 用 RUN_MIGRATIONS 控制是否自動執行（預設 true）
+// ------------------------
+var runMigrations = (Environment.GetEnvironmentVariable("RUN_MIGRATIONS") ?? "true")
+                    .Equals("true", StringComparison.OrdinalIgnoreCase);
+
+app.Logger.LogInformation("DB Provider: {Provider}", isPostgres ? "PostgreSQL" : "SQLite");
+app.Logger.LogInformation("Auto-migrate on startup (RUN_MIGRATIONS): {Run}", runMigrations);
+
+if (runMigrations)
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ARCompletionsContext>();
     try
     {
-        db.Database.Migrate();
+        app.Logger.LogInformation("Applying EF Core migrations...");
+        db.Database.Migrate(); // ✅ 只套用遷移（結構變更）；不動既有資料
+        app.Logger.LogInformation("Migrations applied successfully.");
     }
     catch (Exception ex)
     {
-        // 若你目前只有 SQLite 的遷移而轉到 PG，Migrate 可能會因提供者不同而失敗
-        app.Logger.LogWarning(ex, "Database.Migrate() 失敗，改用 EnsureCreated() 建表。");
-        db.Database.EnsureCreated();
+        // ❌ 不要 fallback 到 EnsureCreated()，避免與遷移管線分歧或造成「看似清空」的錯覺
+        app.Logger.LogError(ex, "Database.Migrate() failed. Not falling back to EnsureCreated().");
+        throw;
     }
 }
 
+// ------------------------
+// 中介層與靜態檔案
+// ------------------------
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "ARCompletions API v1");
-    // c.RoutePrefix = string.Empty; // 若要根路徑顯示 Swagger UI 就解註
+    // c.RoutePrefix = string.Empty; // 若要根路徑顯示 Swagger UI 可解註
 });
 
 app.UseCors("AllowAll");
 
-// ======= 靜態檔案設定 =======
-app.UseStaticFiles(); // wwwroot
+// wwwroot
+app.UseStaticFiles();
 
+// /Image 資料夾靜態檔案
 var imagePath = Path.Combine(builder.Environment.ContentRootPath, "Image");
 if (Directory.Exists(imagePath))
 {
@@ -114,7 +147,6 @@ else
 {
     app.Logger.LogWarning("Static image path not found: {Path}", imagePath);
 }
-// ===========================
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
