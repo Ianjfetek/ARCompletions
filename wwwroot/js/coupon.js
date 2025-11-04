@@ -13,6 +13,7 @@ const TOTAL_VENUES = 15;
 async function init() {
   // 取得 userId（如果沒有則使用預設值）
   const userId = Utils.getUrlParam('userId') || 'guest';
+  const isTestMode = false//Utils.getUrlParam('test') === 'true';
 
   // 顯示 Loading
   Utils.showLoading();
@@ -23,7 +24,36 @@ async function init() {
   // 嘗試載入 API 資料
   let result = { success: false };
 
-  if (userId !== 'guest') {
+  // 測試模式：直接加載測試數據，無需 API
+  if (isTestMode) {
+    console.warn('🧪 測試模式啟用 - 加載測試數據');
+    result = {
+      success: true,
+      data: {
+        completedVenues: ['v001', 'v002', 'v003', 'v004', 'v005'],
+        coupon: [
+          { vendorid: 'v001', imgurl: '/assets/images/01.jpg' },
+          { vendorid: 'v002', imgurl: '/assets/images/01.jpg' },
+          { vendorid: 'v003', imgurl: '/assets/images/01.jpg' },
+          { vendorid: 'v004', imgurl: '/assets/images/01.jpg' },
+          { vendorid: 'v005', imgurl: '/assets/images/01.jpg' },
+          { vendorid: 'v006', imgurl: '/assets/images/01.jpg' },
+          { vendorid: 'v007', imgurl: '/assets/images/01.jpg' },
+          { vendorid: 'v008', imgurl: '/assets/images/01.jpg' },
+          { vendorid: 'v009', imgurl: '/assets/images/01.jpg' },
+          { vendorid: 'v010', imgurl: '/assets/images/01.jpg' },
+          { vendorid: 'v011', imgurl: '/assets/images/01.jpg' },
+          { vendorid: 'v012', imgurl: '/assets/images/01.jpg' },
+          { vendorid: 'v013', imgurl: '/assets/images/01.jpg' },
+          { vendorid: 'v014', imgurl: '/assets/images/01.jpg' },
+          { vendorid: 'v015', imgurl: '/assets/images/01.jpg' }
+        ],
+        requiredVenues: ['v001', 'v002', 'v003', 'v004', 'v005', 'v006', 'v007', 'v008', 'v009', 'v010', 'v011', 'v012', 'v013', 'v014', 'v015'],
+        doneCount: 5,
+        totalRequired: 15
+      }
+    };
+  } else if (userId !== 'guest') {
     result = await API.getVenues(userId);
   }
 
@@ -49,6 +79,11 @@ async function init() {
   // 綁定 URL 參數到導航按鈕
   if (userId !== 'guest') {
     updateNavLinks(userId);
+  }
+
+  // 顯示測試模式提示
+  if (isTestMode) {
+    showTestModeNotice();
   }
 }
 
@@ -268,16 +303,33 @@ function handleCouponClick(venueId, coupon, isUsed, hasEnoughStamps) {
       ]
     );
   } else {
-    // 可用 - 顯示確認使用對話框
+    // 可用 - 顯示第一次確認對話框
     showModal(
       '確認使用優惠券',
       `確定要使用「${storeName}」的優惠券嗎？使用後將無法復原。`,
       [
         { text: '取消', className: 'secondary', onClick: closeModal },
-        { text: '確認使用', className: 'primary', onClick: () => confirmUseCoupon(venueId, coupon) }
+        { text: '確認使用', className: 'primary', onClick: () => showSecondConfirmation(venueId, coupon, storeName) }
       ]
     );
   }
+}
+
+/**
+ * 顯示第二次確認對話框
+ * @param {string} venueId - 場館 ID
+ * @param {Object} coupon - 優惠券資料
+ * @param {string} storeName - 店家名稱
+ */
+function showSecondConfirmation(venueId, coupon, storeName) {
+  showModal(
+    '再次確認',
+    `請再次確認您要使用「${storeName}」的優惠券。此操作無法撤銷。`,
+    [
+      { text: '我再想想', className: 'secondary', onClick: closeModal },
+      { text: '確認無誤，使用優惠券', className: 'primary', onClick: () => confirmUseCoupon(venueId, coupon) }
+    ]
+  );
 }
 
 /**
@@ -286,6 +338,23 @@ function handleCouponClick(venueId, coupon, isUsed, hasEnoughStamps) {
  * @param {Object} coupon - 優惠券資料
  */
 function confirmUseCoupon(venueId, coupon) {
+  // 取得店家資訊
+  const store = storeData[venueId];
+  const couponValue = store && store.coupon ? store.coupon : '';
+  const imageUrl = coupon && coupon.imgurl ? `${API_BASE_URL}${coupon.imgurl}` : null;
+
+  // 判斷是否有圖片或說明
+  if (!imageUrl && !couponValue) {
+    showModal(
+      '無法使用優惠券',
+      '此優惠券缺少必要資訊（圖片或說明），無法使用。',
+      [
+        { text: '確定', className: 'primary', onClick: closeModal }
+      ]
+    );
+    return;
+  }
+
   const success = Storage.markCouponAsUsed(venueId);
 
   if (success) {
@@ -293,19 +362,25 @@ function confirmUseCoupon(venueId, coupon) {
     // 重新渲染頁面
     renderCoupons();
 
-    // 顯示成功提示並顯示優惠券圖片
-    const imageUrl = coupon.imgurl ? `${API_BASE_URL}${coupon.imgurl}` : null;
-    showModal(
+    // 顯示成功提示並顯示優惠券圖片和說明
+    const messageBody = `優惠券已成功使用！<br><br><strong style="color: #1890ff;">${couponValue}</strong>`;
+
+    showModalWithHtml(
       '使用成功',
-      '優惠券已成功使用！',
+      messageBody,
       [
         { text: '確定', className: 'primary', onClick: closeModal }
       ],
       imageUrl
     );
   } else {
-    closeModal();
-    Utils.showError('操作失敗，請稍後再試');
+    showModal(
+      '操作失敗',
+      '優惠券標記失敗，請稍後再試。',
+      [
+        { text: '確定', className: 'primary', onClick: closeModal }
+      ]
+    );
   }
 }
 
@@ -363,11 +438,87 @@ function showModal(title, body, buttons, imageUrl = null) {
 }
 
 /**
+ * 顯示模態對話框（支援 HTML 內容）
+ * @param {string} title - 標題
+ * @param {string} body - HTML 內容
+ * @param {Array} buttons - 按鈕配置 [{text, className, onClick}]
+ * @param {string} imageUrl - 可選的圖片 URL
+ */
+function showModalWithHtml(title, body, buttons, imageUrl = null) {
+  const modal = document.getElementById('modal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+  const modalButtons = document.getElementById('modalButtons');
+
+  modalTitle.textContent = title;
+
+  // 清空 modalBody 並重建內容
+  modalBody.innerHTML = '';
+
+  // 如果有圖片 URL，先顯示圖片
+  if (imageUrl) {
+    const img = document.createElement('img');
+    img.className = 'modal-image';
+    img.src = imageUrl;
+    img.alt = '優惠券';
+    img.style.width = '100%';
+    img.style.maxWidth = '400px';
+    img.style.marginBottom = '1rem';
+    img.style.borderRadius = '8px';
+    img.onerror = function() {
+      this.style.display = 'none';
+    };
+    modalBody.appendChild(img);
+  }
+
+  // 顯示 HTML 內容
+  const textContent = document.createElement('p');
+  textContent.innerHTML = body;
+  textContent.style.margin = '0';
+  textContent.style.lineHeight = '1.6';
+  modalBody.appendChild(textContent);
+
+  // 清空並重建按鈕
+  modalButtons.innerHTML = '';
+  buttons.forEach(btnConfig => {
+    const btn = document.createElement('button');
+    btn.className = `modal-btn ${btnConfig.className}`;
+    btn.textContent = btnConfig.text;
+    btn.addEventListener('click', btnConfig.onClick);
+    modalButtons.appendChild(btn);
+  });
+
+  modal.classList.add('show');
+}
+
+/**
  * 關閉模態對話框
  */
 function closeModal() {
   const modal = document.getElementById('modal');
   modal.classList.remove('show');
+}
+
+/**
+ * 顯示測試模式提示
+ */
+function showTestModeNotice() {
+  const container = document.querySelector('.container');
+  if (!container) return;
+
+  const notice = document.createElement('div');
+  notice.className = 'test-mode-notice';
+  notice.innerHTML = `
+    <div style="background-color: #fff7e6; border: 2px solid #faad14; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+      <span style="font-size: 20px;">🧪</span>
+      <div>
+        <strong style="color: #ad6800;">測試模式已啟用</strong>
+        <p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">已完成 5 個集章，可直接測試優惠券使用流程</p>
+      </div>
+    </div>
+  `;
+
+  container.insertBefore(notice, container.firstChild.nextSibling);
 }
 
 // 點擊模態背景關閉

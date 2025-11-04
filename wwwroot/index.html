@@ -41,8 +41,18 @@
     </div> -->
 
     <!-- 進度顯示 -->
-    <div class="progress-info">
-      已完成 <span class="count" id="progress">0/5</span>
+    <div class="progress-container">
+      <!-- 左側：進度信息 -->
+      <div class="progress-info">
+        已完成 <span class="count" id="progress">0/5</span>
+      </div>
+      <!-- 右側：重新整理區塊 -->
+      <div class="refresh-wrapper">
+        <button class="refresh-btn" id="refreshBtn" title="重新整理資料">
+          <span class="refresh-icon">🔄</span>
+          <span class="refresh-text">重新整理</span>
+        </button>
+      </div>
     </div>
 
     <!-- 集章網格 -->

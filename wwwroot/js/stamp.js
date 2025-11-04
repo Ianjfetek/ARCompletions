@@ -6,6 +6,8 @@
 let venueData = null;
 let stampData = null;
 let userId = null;
+let lastRefreshTime = 0; // 上次刷新時間
+const REFRESH_INTERVAL = 5000; // 刷新間隔 5 秒
 
 /**
  * 初始化頁面
@@ -51,6 +53,9 @@ async function init() {
   if (userId !== 'guest') {
     updateNavLinks(userId);
   }
+
+  // 綁定刷新按鈕事件
+  bindRefreshButton();
 }
 
 /**
@@ -228,6 +233,104 @@ function updateProgress() {
   const totalRequired = venueData.totalRequired || Object.keys(stampData).length;
 
   progressElement.textContent = `${doneCount}/${5}`;
+}
+
+/**
+ * 綁定刷新按鈕事件
+ */
+function bindRefreshButton() {
+  const refreshBtn = document.getElementById('refreshBtn');
+  if (!refreshBtn) return;
+
+  refreshBtn.addEventListener('click', handleRefresh);
+}
+
+/**
+ * 處理刷新事件
+ */
+async function handleRefresh() {
+  const refreshBtn = document.getElementById('refreshBtn');
+  const now = Date.now();
+
+  // 檢查是否在間隔內
+  if (now - lastRefreshTime < REFRESH_INTERVAL) {
+    const remainingTime = Math.ceil((REFRESH_INTERVAL - (now - lastRefreshTime)) / 1000);
+    showRefreshCountdown(remainingTime);
+    return;
+  }
+
+  // 防止重複點擊
+  if (refreshBtn.disabled || refreshBtn.classList.contains('loading')) {
+    return;
+  }
+
+  // 添加 loading 狀態
+  refreshBtn.disabled = true;
+  refreshBtn.classList.add('loading');
+
+  try {
+    // 顯示 Loading
+    Utils.showLoading();
+
+    // 重新載入 API 資料
+    let result = { success: false };
+
+    if (userId !== 'guest') {
+      result = await API.getVenues(userId);
+    }
+
+    Utils.hideLoading();
+
+    // 更新 venueData
+    if (result.success) {
+      venueData = result.data;
+    }
+
+    // 重新渲染頁面
+    renderStamps();
+    updateProgress();
+
+    // 記錄刷新時間
+    lastRefreshTime = now;
+  } catch (error) {
+    console.error('刷新資料時出錯：', error);
+    Utils.hideLoading();
+  } finally {
+    // 移除 loading 狀態
+    refreshBtn.disabled = false;
+    refreshBtn.classList.remove('loading');
+  }
+}
+
+/**
+ * 顯示刷新倒數計時
+ * @param {number} remainingTime - 剩餘秒數
+ */
+function showRefreshCountdown(remainingTime) {
+  const refreshBtn = document.getElementById('refreshBtn');
+  const refreshText = refreshBtn.querySelector('.refresh-text');
+  const originalText = '重新整理';
+  let countdown = remainingTime;
+
+  // 禁用按鈕
+  refreshBtn.disabled = true;
+
+  // 立即顯示第一個倒數
+  refreshText.textContent = `請稍後 ${countdown}s`;
+
+  // 每秒更新一次
+  const countdownInterval = setInterval(() => {
+    countdown--;
+
+    if (countdown > 0) {
+      refreshText.textContent = `請稍後 ${countdown}s`;
+    } else {
+      // 倒數結束，恢復原樣
+      refreshText.textContent = originalText;
+      refreshBtn.disabled = false;
+      clearInterval(countdownInterval);
+    }
+  }, 1000);
 }
 
 // 頁面載入時初始化

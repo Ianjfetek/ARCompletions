@@ -2,6 +2,95 @@
    集章頁面樣式
    ======================================== */
 
+/* 進度容器 */
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  min-height: 50px;
+}
+
+/* 進度信息 */
+.progress-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  width: 50%;
+  margin-bottom: 0;
+}
+
+.progress-info .count {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+/* 重新整理區塊 */
+.refresh-wrapper {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 重新整理按鈕 */
+.refresh-btn {
+  width: auto;
+  height: auto;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--primary-color) 0%, #357abd 100%);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.refresh-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.refresh-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+  background: linear-gradient(135deg, #5fa3f0 0%, #4a90e2 100%);
+}
+
+.refresh-btn:hover::before {
+  left: 100%;
+}
+
+.refresh-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+}
+
+.refresh-icon {
+  display: inline-block;
+  font-size: 18px;
+}
+
 /* 活動引導說明 */
 .activity-guide {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
