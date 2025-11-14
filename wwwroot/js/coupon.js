@@ -241,6 +241,14 @@ function createCouponItem(venueId, coupon, isUsed, completedCount) {
 
   infoContainer.appendChild(description);
 
+  // 優惠內容（如果有的話）
+  if (store && store.coupon) {
+    const couponContent = document.createElement('div');
+    couponContent.className = 'coupon-offer';
+    couponContent.innerHTML = `<strong>🎁 優惠:</strong> ${store.coupon}`;
+    infoContainer.appendChild(couponContent);
+  }
+
   // 按鈕容器（右下角）
   const buttonContainer = document.createElement('div');
   buttonContainer.className = 'coupon-button-container';
