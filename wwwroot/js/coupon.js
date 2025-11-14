@@ -245,7 +245,7 @@ function createCouponItem(venueId, coupon, isUsed, completedCount) {
   if (store && store.coupon) {
     const couponContent = document.createElement('div');
     couponContent.className = 'coupon-offer';
-    couponContent.innerHTML = `<strong>🎁 優惠:</strong> ${store.coupon}`;
+    couponContent.innerHTML = `<strong>🎁 集章優惠:</strong> ${store.coupon}`;
     infoContainer.appendChild(couponContent);
   }
 
